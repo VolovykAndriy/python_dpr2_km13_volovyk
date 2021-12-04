@@ -11,12 +11,12 @@ import math
 import random
 import string
 
-VOWELS = 'aeiou'
+VOWELS = 'oaeiu'
 CONSONANTS = 'bcdfghjklmnpqrstvwxyz'
 HAND_SIZE = 7
 
 SCRABBLE_LETTER_VALUES = {
-    'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1, 'f': 4, 'g': 2, 'h': 4, 'i': 1, 'j': 8, 'k': 5, 'l': 1, 'm': 3, 'n': 1, 'o': 1, 'p': 3, 'q': 10, 'r': 1, 's': 1, 't': 1, 'u': 1, 'v': 4, 'w': 4, 'x': 8, 'y': 4, 'z': 10
+    'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1, 'f': 4, 'g': 2, 'h': 4, 'i': 1, 'j': 8, 'k': 5, 'l': 1, 'm': 3, 'n': 1, 'o': 1, 'p': 3, 'q': 10, 'r': 1, 's': 1, 't': 1, 'u': 1, 'v': 4, 'w': 4, 'x': 8, 'y': 4, 'z': 10, '*': 0
 }
 
 # -----------------------------------
@@ -94,10 +94,9 @@ def get_word_score(word, n):
     returns: int >= 0
     """
     sum = 0
-    if word.isalpha():
-        for letter in word.lower():
-            sum += SCRABBLE_LETTER_VALUES[letter]
-        sum = sum * max(1, (7*len(word)-3*(n-len(word))))
+    for letter in word.lower():
+        sum += SCRABBLE_LETTER_VALUES[letter]
+    sum = sum * max(1, (7*len(word)-3*(n-len(word))))
     return sum
 
 #
@@ -146,10 +145,10 @@ def deal_hand(n):
     hand = {}
     num_vowels = int(math.ceil(n / 3))
 
-    for i in range(num_vowels):
+    for i in range(num_vowels-1):
         x = random.choice(VOWELS)
         hand[x] = hand.get(x, 0) + 1
-
+    hand["*"] = hand.get("*", 0) + 1
     for i in range(num_vowels, n):
         x = random.choice(CONSONANTS)
         hand[x] = hand.get(x, 0) + 1
@@ -184,7 +183,7 @@ def update_hand(hand, word):
         if updated_hand.get(i, 0) > 1:
             updated_hand[i] -= 1
         else:
-            updated_hand.pop(i)
+            updated_hand.pop(i, 0)
     return updated_hand
 
 #
@@ -205,9 +204,27 @@ def is_valid_word(word, hand, word_list):
     """
     check = False
     hand_for_check = hand.copy()
-    word = word.lower()
-    if word in word_list:
-        for i in word:
+    if "*" in word and "*" in hand:
+        for j in VOWELS:
+            temp_word = str()
+            list_word = [i for i in word.lower()]
+            list_word[word.find("*")] = j
+            for i in list_word:
+                temp_word += i
+            if temp_word in word_list:
+                check = True
+                hand_for_check.pop('*')
+                hand_for_check.update([(j, 1)])
+                break
+    if check:
+        for i in temp_word:
+            if i in hand_for_check:
+                check = True
+                hand_for_check = update_hand(hand_for_check, i)
+            else:
+                return False
+    elif word.lower() in word_list:
+        for i in word.lower():
             if i in hand_for_check:
                 check = True
                 hand_for_check = update_hand(hand_for_check, i)
@@ -227,8 +244,7 @@ def calculate_handlen(hand):
     hand: dictionary (string-> int)
     returns: integer
     """
-
-    pass  # TO DO... Remove this line when you implement this function
+    return len(hand.keys())
 
 
 def play_hand(hand, word_list):
@@ -260,7 +276,27 @@ def play_hand(hand, word_list):
       returns: the total score for the hand
 
     """
-
+    total_score = 0
+    while True:
+        if hand == dict():
+            return total_score
+        print("Current hand: ", end="")
+        display_hand(hand)
+        word = input("Enter word, or “!!” to indicate that you are finished: ").lower()
+        if word == "!!":
+            return total_score
+        if is_valid_word(word, hand, word_list):
+            score = get_word_score(word, calculate_handlen(hand))
+            total_score += score
+            print(
+                f"'{word}' earned {score} points. Total {total_score} points"
+            )
+        else:
+            print(
+                "That is not a valid word. Please choose another word."
+            )
+        hand = update_hand(hand, word)
+        
     # BEGIN PSEUDOCODE <-- Remove this comment when you implement this function
     # Keep track of the total score
 
@@ -290,7 +326,7 @@ def play_hand(hand, word_list):
     # so tell user the total score
 
     # Return the total score as result of function
-
+play_hand(deal_hand(7), load_words())
 
 #
 # Problem #6: Playing a game
