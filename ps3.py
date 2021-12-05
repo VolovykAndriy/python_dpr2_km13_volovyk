@@ -5,7 +5,8 @@
 #
 # Name          : Volovyk Andriy
 # Collaborators : -
-# Time spent    : <total time>
+# Time spent    : +- 3 hours
+# Function that I hope good but maybe no: substitute_hand(hand, letter)
 
 import math
 import random
