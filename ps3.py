@@ -378,8 +378,13 @@ def play_game(word_list):
     while True:
         try:
             num_of_hands = int(input("Enter total number of hands: "))
+            if num_of_hands <= 0:
+                raise TypeError
         except ValueError:
             print("This is invalid symbol")
+            continue
+        except TypeError:
+            print("Num of hands must be upper than 0")
             continue
         break
     hands = [deal_hand(HAND_SIZE) for i in range(num_of_hands)]
