@@ -285,7 +285,7 @@ def play_hand(hand, word_list):
         word = input(
             "Enter word, or “!!” to indicate that you are finished: ").lower()
         if word == "!!":
-            return total_score
+            break
         if is_valid_word(word, hand, word_list):
             score = get_word_score(word, calculate_handlen(hand))
             total_score += score
@@ -297,7 +297,9 @@ def play_hand(hand, word_list):
                 "That is not a valid word. Please choose another word."
             )
         hand = update_hand(hand, word)
-    print(f"Total score for this hand: {total_score}")
+    if calculate_handlen(hand) == 0:
+        print("Run out of letters.", end=" ")
+    print(f"Total score for this hand: {total_score}", "-"*25, sep="\n")
     return total_score
 
 #
@@ -409,11 +411,9 @@ def play_game(word_list):
                         "This is not valid input, please eneter 'yes' or 'no'")
                     continue
                 else:
-                    print('-'*50)
                     break
         score = play_hand(hand, word_list)
         replay_score = 0
-        print('-'*50)
         if replay_check:
             while True:
                 try:
@@ -430,7 +430,6 @@ def play_game(word_list):
                         "This is not valid input, please eneter 'yes' or 'no'")
                     continue
                 break
-            print("-"*50)
         total_score += max(score, replay_score)
     print(f"Total score over all hands: {total_score}")
     return total_score
